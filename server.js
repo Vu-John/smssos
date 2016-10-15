@@ -18,8 +18,8 @@ MongoClient.connect('mongodb://emadahmed:emadhello123@ds031611.mlab.com:31611/me
   })
 })
 
-/// Handle GET request.
-app.get('/', (req, res) => {
+/// Handle GET request - Serve up home page.
+app.get('/home', (req, res) => {
   var cursor = db.collection('quotes').find().toArray(function(err, results) {
     console.log(results)
     // Send HTML file populated with quotes here.
@@ -27,12 +27,14 @@ app.get('/', (req, res) => {
   console.log(cursor)
   // Serve index.html file back to the browser.
   res.sendFile(__dirname + '/index.html')
+})
 
-  // Send SMS to device.
-  // var twiml = new twilio.TwimlResponse()
-  // twiml.message("Messaged received. Thank you!")
-  // res.writeHead(200, {'content-type': 'text/xml'})
-  // res.end(twiml.toString())
+/// Handle GET request - Send SMS to device.
+app.get('/message', (req, res) => {
+  var twiml = new twilio.TwimlResponse()
+  twiml.message("Messaged received. Thank you!")
+  res.writeHead(200, {'content-type': 'text/xml'})
+  res.end(twiml.toString())
 })
 
 /// Handle POST request.
