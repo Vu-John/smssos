@@ -1,9 +1,9 @@
 const bodyParser = require('body-parser')
 const express = require('express')
-const MongoClient = require('mongodb').MongoClient
+const mongoClient = require('mongodb').MongoClient
+const path = require('path')
 const twilio = require('twilio')
 const app = express()
-var path = require('path')
 
 app.use(bodyParser.urlencoded({extended: true}))
 app.use(express.static(path.join(__dirname, 'public')))
@@ -11,7 +11,7 @@ app.use(express.static(path.join(__dirname, 'public')))
 var db
 
 /// Connect to MongoDB.
-MongoClient.connect('mongodb://emadahmed:emadhello123@ds031611.mlab.com:31611/medsms', (err, database) => {
+mongoClient.connect('mongodb://emadahmed:emadhello123@ds031611.mlab.com:31611/medsms', (err, database) => {
   if (err) return console.log(err)
   db = database
   // Start the server.
@@ -21,14 +21,14 @@ MongoClient.connect('mongodb://emadahmed:emadhello123@ds031611.mlab.com:31611/me
 })
 
 /// Handle GET request - Serve up home page.
-app.get('/home', (req, res) => {
+app.get('/', (req, res) => {
   var cursor = db.collection('quotes').find().toArray(function(err, results) {
     console.log(results)
     // Send HTML file populated with quotes here.
   })
   console.log(cursor)
   // Serve index.html file back to the browser.
-  res.sendFile(__dirname + '/public/' + 'index.html')
+  res.sendFile(__dirname + '/public/index.html')
 })
 
 /// Handle GET request - Send SMS to device.
