@@ -3,8 +3,10 @@ const express = require('express')
 const MongoClient = require('mongodb').MongoClient
 const twilio = require('twilio')
 const app = express()
+var path = require('path')
 
 app.use(bodyParser.urlencoded({extended: true}))
+app.use(express.static(path.join(__dirname, 'public')))
 
 var db
 
@@ -26,7 +28,7 @@ app.get('/home', (req, res) => {
   })
   console.log(cursor)
   // Serve index.html file back to the browser.
-  res.sendFile(__dirname + '/index.html')
+  res.sendFile(__dirname + '/public/' + 'index.html')
 })
 
 /// Handle GET request - Send SMS to device.
