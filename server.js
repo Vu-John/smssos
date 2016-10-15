@@ -4,8 +4,8 @@ const mongoClient = require('mongodb').MongoClient
 const path = require('path')
 const twilio = require('twilio')
 const app = express()
-app.set('view engine', 'ejs')
 
+app.set('view engine', 'ejs')
 
 app.use(bodyParser.urlencoded({extended: true}))
 app.use(express.static(path.join(__dirname, 'public')))
@@ -25,17 +25,13 @@ mongoClient.connect('mongodb://emadahmed:emadhello123@ds031611.mlab.com:31611/me
 })
 
 /// Handle GET request - Serve up home page.
-app.get('/home', (req, res) => {
+app.get('/', (req, res) => {
   db.collection('userText').find().toArray((err, result) => {
-    console.log('entered get')
     if (err) return console.log(err)
-    // renders index.ejs
+    // Renders index.ejs
     res.render('index.ejs', {userText: result})
   })
 })
-
-
-
 
 /// Handle GET request - Send SMS to device.
 app.get('/message', (req, res) => {
@@ -46,28 +42,24 @@ app.get('/message', (req, res) => {
   var date = (text[1])
   var time = (text[2])
   var reason = (text[3])
-  var number = req.query.From
+  var number = req.query.Fromq
+  var appointment = {user_date: date, user_time: time, user_reason: reason, user_number: number}
 
-  var appointment = {user_date: date, user_time: time, user_reason: reason, user_number: number};
-    // Insert some users
-    info.insert([appointment], function (err, result) {
-      if (err) {
-        console.log(err);
-      } else {
-        console.log('Inserted %d documents into the "users" collection. The documents inserted with "_id" are:', result.length, result);
-      }
-
-      //res.writeHead(200, {'content-type': 'text/xml'})
-    //  res.end(twiml.toString())
-      //Close connection
-      //db.close();
-    });
-
-    res.redirect('/home')
-
+  // Insert some users.
+  info.insert([appointment], function (err, result) {
+    if (err) {
+      console.log(err)
+    } else {
+      console.log('Inserted %d documents into the "users" collection. The documents inserted with "_id" are:', result.length, result)
+    }
+    // res.writeHead(200, {'content-type': 'text/xml'})
+    // res.end(twiml.toString())
+    //
+    // // Close connection.
+    // db.close()
+  })
+  res.redirect('/')
 })
-
-
 
 /// Handle POST request.
 app.post('/userText', (req, res) => {
