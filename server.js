@@ -52,13 +52,12 @@ app.get('/message', (req, res) => {
     } else {
       console.log('Inserted %d documents into the "users" collection. The documents inserted with "_id" are:', result.length, result)
     }
-    // res.writeHead(200, {'content-type': 'text/xml'})
-    // res.end(twiml.toString())
-    //
+    res.writeHead(200, {'content-type': 'text/xml'})
+    res.end(twiml.toString())
+
     // // Close connection.
     // db.close()
   })
-  res.redirect('/')
 })
 
 /// Handle POST request.
@@ -66,6 +65,5 @@ app.post('/userText', (req, res) => {
   db.collection('userText').save(req.body, (err, result) => {
     if (err) return console.log(err)
     console.log('saved to database')
-    //res.redirect('/')
   })
 })
