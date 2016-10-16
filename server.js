@@ -73,22 +73,26 @@ app.post('/userText', (req, res) => {
 /// Handle request.
 function handleReq(req, cb) {
   // Starts with `Download: `.
-  if(req.query.Body.startsWith('Download: ')) {
+  if (req.query.Body.startsWith('Download: ')) {
     var link = req.query.Body.replace('Download: ', '')
     var dest = path.basename(link)
 
     download(link, dest, (err, data) => {
-      if(err)
+      if (err)
         throw err
       fs.readFile(dest, 'utf8', (err, data) => {
-        if(err)
+        if (err)
           throw err
         cb(data)
       })
       console.log('Downloaded: ', link)
     })
-  } else if(req.query.Body.startsWith('Appointment')){
-
+  } else if (req.query.Body.startsWith('Appointment')) {
+    if (!isMsgBody(req.query)) {
+      cb("Please enter your appointment in the following format: appointment,mm/dd/yyyy,HH:MM,<reason>")
+      console.log("FAIL")
+      return
+    }
     var text = String(req.query.Body).split(',')
     var date = (text[1])
     var time = (text[2])
@@ -112,12 +116,13 @@ function handleReq(req, cb) {
       }
 
       // cb(data.toString())
-      cb('Thanks for booking an appointment, bitch!')
+      cb('Thanks for booking an appointment BlazeSMS!')
 
       // // Close connection.
       // db.close()
     })
   } else {
+    // Handle other cases here.
     return cb(req.query.Body)
   }
 }
@@ -132,15 +137,16 @@ function download(link, dest, cb) {
     })
   }).on('error', (err) => {
     fs.unlink(dest)
-    if(cb)
+    if (cb)
       cb(err.message)
   })
   return file
 }
 
 /// Check if the date is valid (Format in: mm/dd/yyyy).
-function isValidDate(dateString){
-  if (dateString.match(/^(?:(0[1-9]|1[012])[\- \/.](0[1-9]|[12][0-9]|3[01])[\- \/.](19|20)[0-9]{2})$/)) {
+function isValidDate(dateString) {
+  var dateFormat = /^(0[1-9]|1[0-2])\/(0[1-9]|1\d|2\d|3[01])\/(19|20)\d{2}$/
+  if (dateString.match(dateFormat)) {
     return true
   } else {
     return false
@@ -149,7 +155,7 @@ function isValidDate(dateString){
 
 /// Checks if the time is valid (HH:MM).
 function isValidTime(timeString) {
-  var militaryTime = /^(((([1]{0,1}[0-9])|(2[0-3])):?[0-5][0-9])|(24:?00))$/
+  var militaryTime = /^(((([0-1]{0,1}[0-9])|(2[0-3])):?[0-5][0-9])|(24:?00))$/
   return (timeString.match(militaryTime) !== null)
 }
 
@@ -159,6 +165,8 @@ function isValidTime(timeString) {
 ///   123-456-7890
 ///   123.456.7890
 ///   1234567890
+///   +(123) 456-7890
+///   etc...
 function isValidPhoneNumber(phoneNumber) {
   var phoneFormat = /^[+]{0,1}[1]{0,1}[(]{0,1}[0-9]{3}[)]{0,1}[-\s\.]{0,1}[0-9]{3}[-\s\.]{0,1}[0-9]{4}$/
   var digits = phoneNumber.replace(/\D/g, "")
@@ -167,7 +175,7 @@ function isValidPhoneNumber(phoneNumber) {
 
 /// Check the message body.
 function isMsgBody(msgBody) {
-  var text = (String(msgBody.Body)).split(',')
+  var text = (String(msgBody.Body).replace(/\s/g, '')).split(',')
   if (!(text.length == 4)) {
     return false
   }
