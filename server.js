@@ -73,8 +73,8 @@ app.post('/userText', (req, res) => {
 /// Handle request.
 function handleReq(req, cb) {
   // Starts with `Download: `.
-  if (req.query.Body.startsWith('Download: ')) {
-    var link = req.query.Body.replace('Download: ', '')
+  if (req.query.Body.toLowerCase().startsWith('download,')) {
+    var link = req.query.Body.split(',')[1];
     var dest = path.basename(link)
 
     download(link, dest, (err, data) => {
@@ -87,12 +87,14 @@ function handleReq(req, cb) {
       })
       console.log('Downloaded: ', link)
     })
-  } else if (req.query.Body.startsWith('Appointment')) {
+  } else if (req.query.Body.toLowerCase().startsWith('appointment')) {
+    // Checks if the message body is formatted correctly.
     if (!isMsgBody(req.query)) {
       cb("Please enter your appointment in the following format: appointment,mm/dd/yyyy,HH:MM,<reason>")
       console.log("FAIL")
       return
     }
+
     var text = String(req.query.Body).split(',')
     var date = (text[1])
     var time = (text[2])
