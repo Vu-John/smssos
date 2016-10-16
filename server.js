@@ -68,12 +68,14 @@ app.post('/userText', (req, res) => {
 
 /// Appointment for next date.
 var nextDate = function(dates, dateWant) {
-  for (var i = 0; i < dates.length; i++) {
+  console.log(dates)
+  for (var i = 0; i <dates.length ; i++) {
     if (dates[i + 1] == null) {
       break
     }
-    if (Math.abs(dates[i] - dateWant) >= 1800000 && Math.abs(dates[i + 1] - dateWant) > 1800000) {
+    if (Math.abs(dates[i] - dateWant) >= 1800000 || Math.abs(dates[i + 1] - dateWant) >= 1800000) {
       if (dateWant % 1800000 == 0) {
+        console.log("multiple of 30 mins")
         return dateWant
       } else {
         break
@@ -81,7 +83,8 @@ var nextDate = function(dates, dateWant) {
     }
   }
   var sum = 1800000 - (dateWant % 1800000)
-  return dateWant + sum
+  console.log("not multiple of 30 mins")
+  return dateWant - sum
 }
 
 /// Handle request.
@@ -123,7 +126,7 @@ function handleReq(req, cb) {
 
     var epochdate = date.getTime() // turns date into epoch time (easier for comparison)
     var epochtimes=[]
-    var queryepoch = db.collection('userText').find({},{epoch_time:1, _id:0}).toArray((err, result) => {
+    var queryepoch = db.collection('userText').find({},{epoch_time:1, _id:0}).sort({epoch_time: 1}).toArray((err, result) => {
       // Querying for only the epoch times in the database to see if the user-requested appointment is appropriate.
       epochtimes = result
       console.log(result)
