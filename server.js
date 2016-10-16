@@ -84,8 +84,9 @@ var nextDate = function(dates, dateWant) {
 /// Handle request.
 function handleReq(req, cb) {
   // Starts with `Download: `.
-  if (req.query.Body.toLowerCase().startsWith('download,')) {
-    var link = req.query.Body.split(',')[1]
+  var parts = req.query.Body.split(',');
+  if (parts[0].toLowerCase() === 'download') {
+    var link = parts[1]
     var dest = path.basename(link)
 
     download(link, dest, (err, data) => {
@@ -98,17 +99,17 @@ function handleReq(req, cb) {
       })
       console.log('Downloaded: ', link)
     })
-  } else if (req.query.Body.toLowerCase().startsWith('appointment')) {
+  } else if (parts[0].toLowerCase() === 'appointment') {
     // Checks if the message body is formatted correctly.
     if (!isMsgBody(req.query)) {
       cb("Please enter your appointment in the following format: \nappointment,mm/dd/yyyy,HH:MM,<reason>")
       return
     }
 
-    var text = String(req.query.Body).split(',')
-    var date = new Date(String(text[1])) // gets date (without time)
-    var time = String((text[2])) // gets time in hours:minutes format i.e. 5:06
-    var reason = (text[3])
+    //var text = String(req.query.Body).split(',')
+    var date = new Date(String(parts[1])) // gets date (without time)
+    var time = String((parts[2])) // gets time in hours:minutes format i.e. 5:06
+    var reason = (parts[3])
     var number = req.query.From
 
     time.split(':')
