@@ -81,9 +81,6 @@ function handleReq(req, cb) {
       })
       console.log('Downloaded: ', link)
     })
-<<<<<<< HEAD
-  } else if(parts[0].equalsIgnoreCase('appointment')) {
-=======
   } else if (req.query.Body.toLowerCase().startsWith('appointment')) {
     // Checks if the message body is formatted correctly.
     if (!isMsgBody(req.query)) {
@@ -97,12 +94,11 @@ function handleReq(req, cb) {
     var time = (text[2])
     var reason = (text[3])
     var number = req.query.From
->>>>>>> 865e3e619f3078883a8474e19eb7b86253559b21
     var appointment = {
-      user_date: parts[1],
-      user_time: parts[2],
-      user_reason: parts[3],
-      user_number: req.query.From
+      user_date: date,
+      user_time: time,
+      user_reason: reason,
+      user_number: number
     }
 
     console.log(appointment)
