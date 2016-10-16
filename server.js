@@ -42,7 +42,7 @@ app.get('/message', (req, res) => {
   var date = (text[1])
   var time = (text[2])
   var reason = (text[3])
-  var number = req.query.Fromq
+  var number = req.query.From
   var appointment = {user_date: date, user_time: time, user_reason: reason, user_number: number}
 
   // Insert some users.
