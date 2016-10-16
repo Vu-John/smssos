@@ -1,11 +1,13 @@
+/// Node.js modules.
 const fs = require('fs')
 const http = require('http')
 const path = require('path')
 
-const twilio = require('twilio')
-const express = require('express')
+/// Installed modules.
 const bodyParser = require('body-parser')
+const express = require('express')
 const mongoClient = require('mongodb').MongoClient
+const twilio = require('twilio')
 
 const app = express()
 
@@ -44,15 +46,15 @@ app.get('/message', (req, res) => {
   console.log('SMS Received: ', req.query.Body)
 
   handleReq(req, (data) => {
-    //var snippets = data.match(/.{1, MAX_SMS}/g)
-    //for(var i = 0 i < snippets.length i++) {
-      //console.log(data[i])
+    // var snippets = data.match(/.{1, MAX_SMS}/g)
+    // for(var i = 0 i < snippets.length i++) {
+      // console.log(data[i])
       var twiml = new twilio.TwimlResponse()
       twiml.message(data)
-      //twiml.message(snippets[i])
+      // twiml.message(snippets[i])
       res.writeHead(200, {'content-type': 'text/xml'})
       res.end(twiml.toString())
-    //}
+    // }
   })
 })
 
@@ -64,8 +66,13 @@ app.post('/userText', (req, res) => {
   })
 })
 
+///
+/// Helper Methods.
+///
+
+/// Handle request.
 function handleReq(req, cb) {
-  // starts with `Download: `
+  // Starts with `Download: `.
   if(req.query.Body.startsWith('Download: ')) {
     var link = req.query.Body.replace('Download: ', '')
     var dest = path.basename(link)
@@ -101,10 +108,10 @@ function handleReq(req, cb) {
       if (err) {
         console.log(err)
       } else {
-        //console.log('Inserted %d documents into the "users" collection. The documents inserted with "_id" are:', data.length, data)
+        // console.log('Inserted %d documents into the "users" collection. The documents inserted with "_id" are:', data.length, data)
       }
 
-      //cb(data.toString())
+      // cb(data.toString())
       cb('Thanks for booking an appointment, bitch!')
 
       // // Close connection.
@@ -115,7 +122,7 @@ function handleReq(req, cb) {
   }
 }
 
-
+/// Handle download.
 function download(link, dest, cb) {
   var file = fs.createWriteStream(dest)
   var req = http.get(link, (res) => {
@@ -129,4 +136,45 @@ function download(link, dest, cb) {
       cb(err.message)
   })
   return file
+}
+
+/// Check if the date is valid (Format in: mm/dd/yyyy).
+function isValidDate(dateString){
+  if (dateString.match(/^(?:(0[1-9]|1[012])[\- \/.](0[1-9]|[12][0-9]|3[01])[\- \/.](19|20)[0-9]{2})$/)) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
+/// Checks if the time is valid (HH:MM);
+function isValidTime(timeString) {
+  var militaryTime = /^(((([1]{0,1}[0-9])|(2[0-3])):?[0-5][0-9])|(24:?00))$/
+  return (timeString.match(militaryTime) !== null)
+}
+
+/// Checks if the user's phone number is correctly formatted.
+/// Ex:
+///   (123) 456-7890
+///   123-456-7890
+///   123.456.7890
+///   1234567890
+function isValidPhoneNumber(phoneNumber) {
+  var phoneFormat = /^[+]{0,1}[1]{0,1}[(]{0,1}[0-9]{3}[)]{0,1}[-\s\.]{0,1}[0-9]{3}[-\s\.]{0,1}[0-9]{4}$/
+  var digits = phoneNumber.replace(/\D/g, "")
+  return (digits.match(phoneFormat) !== null)
+}
+
+/// Check the message body.
+function isMsgBody(msgBody) {
+  var text = (String(msgBody.Body)).split(',')
+  if (!(text.length == 4)) {
+    return false
+  }
+  var keyword = (text[0])
+  var date = (text[1])
+  var time = (text[2])
+  var reason = (text[3])
+  var number = msgBody.From
+  return (isValidDate(date) && isValidTime(time) && isValidPhoneNumber(number))
 }
