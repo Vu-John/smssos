@@ -141,13 +141,13 @@ function download(link, dest, cb) {
 /// Check if the date is valid (Format in: mm/dd/yyyy).
 function isValidDate(dateString){
   if (dateString.match(/^(?:(0[1-9]|1[012])[\- \/.](0[1-9]|[12][0-9]|3[01])[\- \/.](19|20)[0-9]{2})$/)) {
-    return true;
+    return true
   } else {
-    return false;
+    return false
   }
 }
 
-/// Checks if the time is valid (HH:MM);
+/// Checks if the time is valid (HH:MM).
 function isValidTime(timeString) {
   var militaryTime = /^(((([1]{0,1}[0-9])|(2[0-3])):?[0-5][0-9])|(24:?00))$/
   return (timeString.match(militaryTime) !== null)
