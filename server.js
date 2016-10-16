@@ -63,7 +63,7 @@ app.post('/userText', (req, res) => {
 })
 
 ///
-/// Helper Function.
+/// Helper Functions.
 ///
 
 
