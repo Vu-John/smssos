@@ -18,8 +18,7 @@ app.set('view engine', 'ejs')
 app.use(bodyParser.urlencoded({extended: true}))
 app.use(express.static(path.join(__dirname, 'public')))
 
-var db
-var info
+var db, info
 
 /// Connect to MongoDB.
 mongoClient.connect(mongoCode, (err, database) => {
@@ -46,15 +45,10 @@ app.get('/message', (req, res) => {
   console.log('SMS Received: ', req.query.Body)
 
   handleReq(req, (data) => {
-    // var snippets = data.match(/.{1, MAX_SMS}/g)
-    // for(var i = 0 i < snippets.length i++) {
-      // console.log(data[i])
       var twiml = new twilio.TwimlResponse()
       twiml.message(data)
-      // twiml.message(snippets[i])
       res.writeHead(200, {'content-type': 'text/xml'})
       res.end(twiml.toString())
-    // }
   })
 })
 
