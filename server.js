@@ -63,28 +63,31 @@ app.post('/userText', (req, res) => {
 })
 
 ///
-/// Helper Methods.
+/// Helper Function.
 ///
 
 /// Appointment for next date.
 var nextDate = function(dates, dateWant) {
-  // Iterates through array of epoch times.
   for (var i = 0; i < dates.length; i++) {
-		if (Math.abs(dates[i] - dateWant) > 1800000) {
-			if (dateWant % 1800000 == 0) return dateWant // if not within 30 minutes of another appointment and a multiple of 30 minutes, return user requested date
-			else {
-				break
-			}
-		}
-	}
-	var sum = Math.abs(1800000 - (dateWant % 1800000)) // rounds to nearest time that is available if user requested time is not available
-	return dateWant + sum
+    if (dates[i + 1] == null) {
+      break
+    }
+    if (Math.abs(dates[i] - dateWant) >= 1800000 && Math.abs(dates[i + 1] - dateWant) > 1800000) {
+      if (dateWant % 1800000 == 0) {
+        return dateWant
+      } else {
+        break
+      }
+    }
+  }
+  var sum = 1800000 - (dateWant % 1800000)
+  return dateWant + sum
 }
 
 /// Handle request.
 function handleReq(req, cb) {
   // Starts with `Download: `.
-  var parts = req.query.Body.split(',');
+  var parts = req.query.Body.split(',')
   if (parts[0].toLowerCase() === 'download') {
     var link = parts[1]
     var dest = path.basename(link)
@@ -106,7 +109,6 @@ function handleReq(req, cb) {
       return
     }
 
-    //var text = String(req.query.Body).split(',')
     var date = new Date(String(parts[1])) // gets date (without time)
     var time = String((parts[2])) // gets time in hours:minutes format i.e. 5:06
     var reason = (parts[3])
