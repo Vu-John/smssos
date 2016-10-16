@@ -76,15 +76,11 @@ function handleReq(req, cb) {
       console.log('Downloaded: ', link)
     })
   } else if(parts[0].equalsIgnoreCase('appointment')) {
-    var date = (parts[1])
-    var time = (parts[2])
-    var reason = (parts[3])
-    var number = req.query.From
     var appointment = {
-      user_date: date,
-      user_time: time,
-      user_reason: reason,
-      user_number: number
+      user_date: parts[1],
+      user_time: parts[2],
+      user_reason: parts[3],
+      user_number: req.query.From
     }
 
     console.log(appointment)
