@@ -33,11 +33,13 @@ mongoClient.connect(mongoCode, (err, database) => {
 
 /// Handle GET request - Serve up home page.
 app.get('/', (req, res) => {
-  db.collection('userText').find().toArray((err, result) => {
+  //db.collection('userText').find().sort( { epoch_date: 1 } )
+  db.collection('userText').find().sort( { epoch_time: 1 } ).toArray((err, result) => {
     if (err) return console.log(err)
     // Renders index.ejs
     res.render('index.ejs', {userText: result})
   })
+  // sdb.close()
 })
 
 /// Handle GET request - Send SMS to device.
@@ -64,11 +66,26 @@ app.post('/userText', (req, res) => {
 /// Helper Methods.
 ///
 
+/// Appointment for next date.
+var nextDate = function(dates, dateWant) {
+  // Iterates through array of epoch times.
+  for (var i = 0; i < dates.length; i++) {
+		if (Math.abs(dates[i] - dateWant) > 1800000) {
+			if (dateWant % 1800000 == 0) return dateWant // if not within 30 minutes of another appointment and a multiple of 30 minutes, return user requested date
+			else {
+				break
+			}
+		}
+	}
+	var sum = Math.abs(1800000 - (dateWant % 1800000)) // rounds to nearest time that is available if user requested time is not available
+	return dateWant + sum
+}
+
 /// Handle request.
 function handleReq(req, cb) {
   // Starts with `Download: `.
   if (req.query.Body.toLowerCase().startsWith('download,')) {
-    var link = req.query.Body.split(',')[1];
+    var link = req.query.Body.split(',')[1]
     var dest = path.basename(link)
 
     download(link, dest, (err, data) => {
@@ -84,35 +101,51 @@ function handleReq(req, cb) {
   } else if (req.query.Body.toLowerCase().startsWith('appointment')) {
     // Checks if the message body is formatted correctly.
     if (!isMsgBody(req.query)) {
-      cb("Please enter your appointment in the following format: appointment,mm/dd/yyyy,HH:MM,<reason>")
-      console.log("FAIL")
+      cb("Please enter your appointment in the following format: \nappointment,mm/dd/yyyy,HH:MM,<reason>")
       return
     }
 
     var text = String(req.query.Body).split(',')
-    var date = (text[1])
-    var time = (text[2])
+    var date = new Date(String(text[1])) // gets date (without time)
+    var time = String((text[2])) // gets time in hours:minutes format i.e. 5:06
     var reason = (text[3])
     var number = req.query.From
+
+    time.split(':')
+    date.setHours(time.split(':')[0]) // hours  - 5
+    date.setMinutes(time.split(':')[1]) // minutes - 06
+
+    console.log("Full date is:")
+    console.log(date)
+
+    var epochdate = date.getTime() // turns date into epoch time (easier for comparison)
+    var epochtimes=[]
+    var queryepoch = db.collection('userText').find({},{epoch_time:1, _id:0}).toArray((err, result) => {
+      // Querying for only the epoch times in the database to see if the user-requested appointment is appropriate.
+      epochtimes = result
+      console.log(result)
+      if (err) return console.log(err)
+    })
+
+    console.log(epochdate)
+    console.log("next date is ")
+    var appointmentTime = new Date(nextDate(epochtimes,epochdate)) // calls helper function nextDate which returns rounded or requested time
     var appointment = {
       user_date: date,
       user_time: time,
       user_reason: reason,
-      user_number: number
+      user_number: number,
+      epoch_time: appointmentTime
     }
 
-    console.log(appointment)
-
-    // Insert some users.
-    info.insert([appointment], (err, data) => {
+    // Insert users.
+    info.insert([appointment], function (err, result) {
       if (err) {
         console.log(err)
-      } else {
-        // console.log('Inserted %d documents into the "users" collection. The documents inserted with "_id" are:', data.length, data)
       }
 
-      // cb(data.toString())
-      cb('Thanks for booking an appointment BlazeSMS!')
+      cb("Appointment booking successful. Your appointment is at: " + appointmentTime)
+      console.log(appointment)
 
       // // Close connection.
       // db.close()
