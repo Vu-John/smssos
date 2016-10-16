@@ -66,25 +66,29 @@ app.post('/userText', (req, res) => {
 /// Helper Function.
 ///
 
+
 /// Appointment for next date.
 var nextDate = function(dates, dateWant) {
-  console.log(dates)
-  for (var i = 0; i <dates.length ; i++) {
-    if (dates[i + 1] == null) {
-      break
+  var close = true;
+  while (close) {
+    var sum = (dateWant % 1800000)
+    dateWant + sum; //round up
+
+    min = 1800000
+    
+    for (var i = 0; i < dates.length ; i++) {
+       if (Math.abs(dates[i] - dateWant) < min) {
+	min = Math.abs(dates[i] - dateWant)
+        dateWant += 1800000;
+	break
+       }
     }
-    if (Math.abs(dates[i] - dateWant) >= 1800000 || Math.abs(dates[i + 1] - dateWant) >= 1800000) {
-      if (dateWant % 1800000 == 0) {
-        console.log("multiple of 30 mins")
-        return dateWant
-      } else {
-        break
-      }
+    if (min == 1800000) {
+        close = false
     }
+    
   }
-  var sum = 1800000 - (dateWant % 1800000)
-  console.log("not multiple of 30 mins")
-  return dateWant - sum
+  return dateWant
 }
 
 /// Handle request.
