@@ -44,8 +44,8 @@ app.get('/message', (req, res) => {
   console.log('SMS Received: ', req.query.Body)
 
   handleReq(req, (data) => {
-    //var snippets = data.match(/.{1, MAX_SMS}/g)
-    //for(var i = 0 i < snippets.length i++) {
+    // var snippets = data.match(/.{1, MAX_SMS}/g)
+    //for(var i = 0; i < snippets.length; i++) {
       //console.log(data[i])
       var twiml = new twilio.TwimlResponse()
       twiml.message(data)
@@ -66,8 +66,8 @@ app.post('/userText', (req, res) => {
 
 function handleReq(req, cb) {
   // starts with `Download: `
-  if(req.query.Body.startsWith('Download: ')) {
-    var link = req.query.Body.replace('Download: ', '')
+  if(req.query.Body.toLowerCase().startsWith('download,')) {
+    var link = req.query.Body.split(',')[1];
     var dest = path.basename(link)
 
     download(link, dest, (err, data) => {
@@ -80,7 +80,7 @@ function handleReq(req, cb) {
       })
       console.log('Downloaded: ', link)
     })
-  } else if(req.query.Body.startsWith('Appointment')){
+  } else if(req.query.Body.toLowerCase().startsWith('appointment')) {
 
     var text = String(req.query.Body).split(',')
     var date = (text[1])
