@@ -16,8 +16,7 @@ app.set('view engine', 'ejs')
 app.use(bodyParser.urlencoded({extended: true}))
 app.use(express.static(path.join(__dirname, 'public')))
 
-var db
-var info
+var db, info
 
 /// Connect to MongoDB.
 mongoClient.connect(mongoCode, (err, database) => {
@@ -44,15 +43,10 @@ app.get('/message', (req, res) => {
   console.log('SMS Received: ', req.query.Body)
 
   handleReq(req, (data) => {
-    // var snippets = data.match(/.{1, MAX_SMS}/g)
-    //for(var i = 0; i < snippets.length; i++) {
-      //console.log(data[i])
       var twiml = new twilio.TwimlResponse()
       twiml.message(data)
-      //twiml.message(snippets[i])
       res.writeHead(200, {'content-type': 'text/xml'})
       res.end(twiml.toString())
-    //}
   })
 })
 
@@ -66,8 +60,9 @@ app.post('/userText', (req, res) => {
 
 function handleReq(req, cb) {
   // starts with `Download: `
-  if(req.query.Body.toLowerCase().startsWith('download,')) {
-    var link = req.query.Body.split(',')[1];
+  var parts = req.query.Body.split(',')
+  if(parts[0].equalsIgnoreCase('download')) {
+    var link = parts[1]
     var dest = path.basename(link)
 
     download(link, dest, (err, data) => {
@@ -80,12 +75,10 @@ function handleReq(req, cb) {
       })
       console.log('Downloaded: ', link)
     })
-  } else if(req.query.Body.toLowerCase().startsWith('appointment')) {
-
-    var text = String(req.query.Body).split(',')
-    var date = (text[1])
-    var time = (text[2])
-    var reason = (text[3])
+  } else if(parts[0].equalsIgnoreCase('appointment')) {
+    var date = (parts[1])
+    var time = (parts[2])
+    var reason = (parts[3])
     var number = req.query.From
     var appointment = {
       user_date: date,
